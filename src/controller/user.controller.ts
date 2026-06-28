@@ -1,3 +1,4 @@
+import { USER_ROLES } from "../constants/constants";
 import { AddOrganisationToDBError } from "../exceptions/organisation.exceptions";
 import { AddOrganisationMemberToDBError } from "../exceptions/organisationMembers.exceptions";
 import { AddUserToDBError, GetUserByEmailFromDBError, LoginUserError } from "../exceptions/user.exceptions";
@@ -19,7 +20,7 @@ export async function loginUser(payload: ILoginUserSchema) {
 		await addMemberToOrganisationInDB({
 			organisationId: newOrganisation.organisationId,
 			userId: newUser.userId,
-			role: "admin",
+			role: USER_ROLES.ADMIN,
 		});
 		return { newUser, newOrganisation };
 	} catch (error) {
