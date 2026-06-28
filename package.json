@@ -9,6 +9,7 @@
     "dotenv": "^17.4.2",
     "drizzle-orm": "^1.0.0-rc.4",
     "hono": "^4.12.27",
+    "nanoid": "^5.1.16",
     "zod": "^4.4.3"
   },
   "devDependencies": {
