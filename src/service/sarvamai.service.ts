@@ -1,8 +1,9 @@
 import { SarvamAIClient } from "sarvamai";
 import { GenerateSarvamResponseError } from "../exceptions/sarvam.exceptions";
 import type { IChatCompletionSchema } from "../routes/v1/chat.route";
+import type { IChatCompletion } from "../types/types";
 
-export async function generateSarvamResponse(payload: IChatCompletionSchema) {
+export async function generateSarvamResponse(payload: IChatCompletionSchema): Promise<IChatCompletion> {
 	const client = new SarvamAIClient({
 		apiSubscriptionKey: payload.apiKey,
 	});
@@ -19,7 +20,7 @@ export async function generateSarvamResponse(payload: IChatCompletionSchema) {
 			temperature: 0.7,
 			top_p: payload.top_p,
 		});
-		return response;
+		return (response as unknown as IChatCompletion);
 	} catch (error) {
 		throw new GenerateSarvamResponseError("Failed to generate response from Sarvam", { cause: (error as Error).message });
 	}
