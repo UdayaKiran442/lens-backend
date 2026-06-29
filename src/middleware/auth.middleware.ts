@@ -1,6 +1,5 @@
 import type { Context } from "hono";
 import { jwtDecode } from "jwt-decode";
-import { UnauthorizedError } from "../exceptions/common.exceptions";
 
 export interface AuthUser {
 	userId: string;
@@ -13,22 +12,15 @@ declare module "hono" {
 }
 
 export async function authMiddleware(c: Context, next: () => Promise<void>) {
-	try {
-		const authHeader = c.req.header("Authorization");
-		if (!authHeader) {
-			throw new UnauthorizedError("Authorization header is missing");
-		}
-		const decodedToken = jwtDecode(authHeader);
-		const userId = decodedToken.sub;
-		if (!userId) {
-			throw new UnauthorizedError("Invalid token or expired token");
-		}
-		c.set("user", { userId });
-		await next();
-	} catch (error) {
-		if (error instanceof UnauthorizedError) {
-			throw error;
-		}
-		throw new UnauthorizedError("Error occurred while authenticating user", { cause: (error as Error).message });
+	const authHeader = c.req.header("Authorization");
+	if (!authHeader) {
+		return c.json({ success: false, error: "Authorization header missing" }, 401);
 	}
+	const decodedToken = jwtDecode(authHeader);
+	const userId = decodedToken.sub;
+	if (!userId) {
+		return c.json({ success: false, error: "Authorization header missing" }, 401);
+	}
+	c.set("user", { userId });
+	await next();
 }
