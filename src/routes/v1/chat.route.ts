@@ -12,6 +12,8 @@ const ChatCompletionSchema = z.object({
 	provider: z.enum([MODEL_PROVIDERS.OPENAI, MODEL_PROVIDERS.SARVAMAI]),
 	prompt: z.any(),
 	apiKey: z.string(),
+    temperature: z.number(),
+    top_p: z.number(),
 });
 
 export type IChatCompletionSchema = z.infer<typeof ChatCompletionSchema> & { userId: string };
