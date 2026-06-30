@@ -1,0 +1,36 @@
+{
+	"providers": {
+		"openai": {
+			"gpt-4o-mini": {
+				"input": 0.15,
+				"output": 0.6,
+				"cached_input": 0.075,
+				"currency": "USD",
+				"unit": 1000000
+			},
+			"gpt-4o": {
+				"input": 2.5,
+				"output": 10,
+				"cached_input": 1.25,
+				"currency": "USD",
+				"unit": 1000000
+			}
+		},
+		"sarvamai": {
+			"sarvam30b": {
+				"input": 2.5,
+				"output": 10,
+				"cached_input": 1.5,
+				"currency": "INR",
+				"unit": 1000000
+			},
+			"sarvam105b": {
+				"input": 4,
+				"output": 16,
+				"cached_input": 2.5,
+				"currency": "INR",
+				"unit": 1000000
+			}
+		}
+	}
+}

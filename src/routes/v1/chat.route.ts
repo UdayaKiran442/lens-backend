@@ -1,9 +1,10 @@
 import { Hono } from "hono";
 import z from "zod";
 import { MODEL_PROVIDERS } from "../../constants/constants";
-import { authMiddleware } from "../../middleware/auth.middleware";
 import { chatController } from "../../controller/chat.controller";
 import { ChatCompletionsError } from "../../exceptions/chat.exceptions";
+import { GetModelPricingFromDBError } from "../../exceptions/modelPricing.exceptions";
+import { authMiddleware } from "../../middleware/auth.middleware";
 
 const chatRouter = new Hono();
 
@@ -12,8 +13,8 @@ const ChatCompletionSchema = z.object({
 	provider: z.enum([MODEL_PROVIDERS.OPENAI, MODEL_PROVIDERS.SARVAMAI]),
 	prompt: z.any(),
 	apiKey: z.string(),
-    temperature: z.number(),
-    top_p: z.number(),
+	temperature: z.number(),
+	top_p: z.number(),
 });
 
 export type IChatCompletionSchema = z.infer<typeof ChatCompletionSchema> & { userId: string };
@@ -36,10 +37,10 @@ chatRouter.post("/completion", authMiddleware, async (c) => {
 			const errMessage = JSON.parse(error.message);
 			return c.json({ success: false, error: errMessage[0], message: errMessage[0].message }, 400);
 		}
-        if (error instanceof ChatCompletionsError) {
-            return c.json({ success: false, error: error.message, message: error.message }, 500);
-        }
-        return c.json({ success: false, error: "Error occurred while processing chat completion", message: (error as Error).message }, 500);
+		if (error instanceof ChatCompletionsError || error instanceof GetModelPricingFromDBError) {
+			return c.json({ success: false, error: error.message, message: error.message }, 500);
+		}
+		return c.json({ success: false, error: "Error occurred while processing chat completion", message: (error as Error).message }, 500);
 	}
 });
 
