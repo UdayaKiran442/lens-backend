@@ -1,4 +1,4 @@
-import { decimal, integer, pgTable, primaryKey, timestamp, varchar } from "drizzle-orm/pg-core";
+import { decimal, index, integer, json, pgTable, primaryKey, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
 	userId: varchar("user_id").primaryKey().notNull(),
@@ -34,5 +34,30 @@ export const modelPricing = pgTable(
 	},
 	(table) => ({
 		primaryKey: primaryKey({ name: "model_pricing_pk", columns: [table.provider, table.model] }),
+	}),
+);
+
+export const llmResponses = pgTable(
+	"llm_responses",
+	{
+		responseId: varchar("response_id").primaryKey().notNull(),
+		userId: varchar("user_id").notNull(),
+		organisationId: varchar("organisation_id").notNull(),
+		provider: varchar("provider").notNull(),
+		model: varchar("model").notNull(),
+		prompt: varchar("prompt").notNull(),
+		response: json("response").notNull(),
+		inputTokens: integer("input_tokens").notNull(),
+		outputTokens: integer("output_tokens").notNull(),
+		cachedInputTokens: integer("cached_input_tokens").notNull(),
+		totalCost: decimal("total_cost", { precision: 15, scale: 7 }).$type<number>().notNull(),
+		totalTokens: integer("total_tokens").notNull(),
+		currency: varchar("currency").notNull(),
+		loggedAt: timestamp("logged_at").notNull().defaultNow(),
+	},
+	(table) => ({
+		primaryKey: primaryKey({ name: "llm_responses_pk", columns: [table.responseId] }),
+		userIdx: index("llm_responses_user_idx").on(table.userId),
+		organisationIdx: index("llm_responses_organisation_idx").on(table.organisationId),
 	}),
 );

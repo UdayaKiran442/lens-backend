@@ -1,8 +1,10 @@
 import { MODEL_PROVIDERS } from "../constants/constants";
 import { ChatCompletionsError } from "../exceptions/chat.exceptions";
+import { InsertLLMResponseToDBError } from "../exceptions/llmResponses.exceptions";
 import { GetModelPricingFromDBError } from "../exceptions/modelPricing.exceptions";
 import { GenerateOpenAIResponseError } from "../exceptions/openai.exceptions";
 import { GenerateSarvamResponseError } from "../exceptions/sarvam.exceptions";
+import { insertLLMResponseToDB } from "../repository/llmResponses.repository";
 import { getModelPricingFromDB } from "../repository/modelPricing.repository";
 import type { IChatCompletionSchema } from "../routes/v1/chat.route";
 import { generateOpenAIResponse } from "../service/openai.service";
@@ -16,6 +18,7 @@ export async function chatController(payload: IChatCompletionSchema) {
 		let outputTokens = 0;
 		let cachedInputTokens = 0;
 		let totalCost = 0;
+		let totalTokens = 0;
 		const pricing = await getModelPricingFromDB({ provider: payload.provider, model: payload.model });
 		const inputPricing = pricing.inputPrice;
 		const outputPricing = pricing.outputPrice;
@@ -30,6 +33,7 @@ export async function chatController(payload: IChatCompletionSchema) {
 				cachedInputTokens = response.usage.prompt_tokens_details?.cached_tokens || 0;
 				inputTokens = response.usage.prompt_tokens - cachedInputTokens;
 				outputTokens = response.usage.completion_tokens;
+				totalTokens = response.usage.total_tokens;
 				totalCost = (inputTokens * inputPricing) / unitPrice + (outputTokens * outputPricing) / unitPrice + (cachedInputTokens * cachedPricing) / unitPrice;
 				break;
 			}
@@ -38,15 +42,30 @@ export async function chatController(payload: IChatCompletionSchema) {
 				cachedInputTokens = response.usage.prompt_tokens_details?.cached_tokens || 0;
 				inputTokens = response.usage.prompt_tokens - cachedInputTokens;
 				outputTokens = response.usage.completion_tokens;
+				totalTokens = response.usage.total_tokens;
 				totalCost = (inputTokens * inputPricing) / unitPrice + (outputTokens * outputPricing) / unitPrice + (cachedInputTokens * cachedPricing) / unitPrice;
 				break;
 			}
 			default:
 				throw new ChatCompletionsError("Invalid provider");
 		}
-		return { response, inputTokens, outputTokens, cachedInputTokens, totalCost, currency };
+		const llmResponse = await insertLLMResponseToDB({
+			organizationId: payload.organisationId,
+			userId: payload.userId,
+			model: payload.model,
+			provider: payload.provider,
+			prompt: JSON.stringify(payload.prompt),
+			response: response,
+			inputTokens: inputTokens,
+			outputTokens: outputTokens,
+			cachedInputTokens: cachedInputTokens,
+			totalCost: totalCost,
+			totalTokens: totalTokens,
+			currency: currency,
+		});
+		return { response, inputTokens, outputTokens, cachedInputTokens, totalCost, currency, llmResponse };
 	} catch (error) {
-		if (error instanceof GenerateSarvamResponseError || error instanceof GenerateOpenAIResponseError || error instanceof GetModelPricingFromDBError) {
+		if (error instanceof GenerateSarvamResponseError || error instanceof GenerateOpenAIResponseError || error instanceof GetModelPricingFromDBError || error instanceof InsertLLMResponseToDBError) {
 			throw error;
 		}
 		throw new ChatCompletionsError("Error occurred while processing chat completion", { cause: (error as Error).message });

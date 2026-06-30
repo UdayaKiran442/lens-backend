@@ -10,10 +10,7 @@ export async function generateOpenAIResponse(payload: IChatCompletionSchema): Pr
 		});
 		const response = await openai.chat.completions.create({
 			model: payload.model,
-			messages: [{
-                "role": "user",
-                "content": payload.prompt
-            }],
+			messages: (payload.prompt as unknown as OpenAI.Chat.Completions.ChatCompletionMessageParam[]),
 			temperature: payload.temperature,
 			top_p: payload.top_p,
 		});
