@@ -57,7 +57,6 @@ export const llmResponses = pgTable(
 	},
 	(table) => ({
 		primaryKey: primaryKey({ name: "llm_responses_pk", columns: [table.responseId] }),
-		userIdx: index("llm_responses_user_idx").on(table.userId),
-		organisationIdx: index("llm_responses_organisation_idx").on(table.organisationId),
+		llmResponsesIdx: index("llm_responses_idx").on(table.userId, table.organisationId),
 	}),
 );
