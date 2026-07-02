@@ -1,11 +1,13 @@
 import { USER_ROLES } from "../constants/constants";
+import { GetUserLLMResponsesFromDBError } from "../exceptions/llmResponses.exceptions";
 import { AddOrganisationToDBError, GetUserOrganisationsFromDBError } from "../exceptions/organisation.exceptions";
 import { AddOrganisationMemberToDBError } from "../exceptions/organisationMembers.exceptions";
-import { AddUserToDBError, GetUserByEmailFromDBError, LoginUserError } from "../exceptions/user.exceptions";
+import { AddUserToDBError, GetUserByEmailFromDBError, GetUserLLMResponsesError, LoginUserError } from "../exceptions/user.exceptions";
+import { getUserLLMResponsesFromDB } from "../repository/llmResponses.repository";
 import { createOrganisatonInDB, getUserOrganisationsFromDB } from "../repository/organisation.repository";
 import { addMemberToOrganisationInDB } from "../repository/organisationMembers.repository";
 import { addUserToDB, getUserByEmailFromDB } from "../repository/user.repository";
-import type { ILoginUserSchema } from "../routes/v1/user.route";
+import type { ILoginUserSchema, IUserLLMResponsesSchema } from "../routes/v1/user.route";
 
 export async function loginUser(payload: ILoginUserSchema) {
 	try {
@@ -35,5 +37,17 @@ export async function loginUser(payload: ILoginUserSchema) {
 			throw error;
 		}
 		throw new LoginUserError("Error occurred while logging in user", { cause: (error as Error).message });
+	}
+}
+
+export async function getUserLLMResponses(payload: IUserLLMResponsesSchema) {
+	try {
+		//TODO: check if user is part of the organisation before fetching the responses
+		return await getUserLLMResponsesFromDB({ userId: payload.userId, organizationId: payload.organisationId });
+	} catch (error) {
+		if (error instanceof GetUserLLMResponsesFromDBError) {
+			throw error;
+		}
+		throw new GetUserLLMResponsesError("Error occurred while fetching user LLM responses", { cause: (error as Error).message });
 	}
 }

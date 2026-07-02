@@ -1,4 +1,5 @@
-import { InsertLLMResponseToDBError } from "../exceptions/llmResponses.exceptions";
+import { and, eq } from "drizzle-orm";
+import { GetUserLLMResponsesFromDBError, InsertLLMResponseToDBError } from "../exceptions/llmResponses.exceptions";
 import { generateNanoId } from "../utils/nanoid.utils";
 import db from "./db";
 import { llmResponses } from "./schema";
@@ -38,5 +39,16 @@ export async function insertLLMResponseToDB(payload: {
 		return insertPayload;
 	} catch (error) {
 		throw new InsertLLMResponseToDBError("Error occurred while inserting LLM response to database", { cause: (error as Error).message });
+	}
+}
+
+export async function getUserLLMResponsesFromDB(payload: { userId: string; organizationId: string }) {
+	try {
+		return await db
+			.select()
+			.from(llmResponses)
+			.where(and(eq(llmResponses.userId, payload.userId), eq(llmResponses.organisationId, payload.organizationId)));
+	} catch (error) {
+		throw new GetUserLLMResponsesFromDBError("Error occurred while fetching user LLM responses from database", { cause: (error as Error).message });
 	}
 }
