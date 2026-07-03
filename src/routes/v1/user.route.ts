@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import z from "zod";
-import { getUserLLMResponses, loginUser } from "../../controller/user.controller";
-import { GetUserLLMResponsesFromDBError } from "../../exceptions/llmResponses.exceptions";
+import { getUserLLMRequests, loginUser } from "../../controller/user.controller";
+import { GetUserLLMRequestsFromDBError } from "../../exceptions/llmRequests.exceptions";
 import { AddOrganisationToDBError } from "../../exceptions/organisation.exceptions";
 import { AddOrganisationMemberToDBError } from "../../exceptions/organisationMembers.exceptions";
-import { AddUserToDBError, GetUserByEmailFromDBError, GetUserLLMResponsesError, LoginUserError } from "../../exceptions/user.exceptions";
+import { AddUserToDBError, GetUserByEmailFromDBError, GetUserLLMRequestsError, LoginUserError } from "../../exceptions/user.exceptions";
 import { authMiddleware } from "../../middleware/auth.middleware";
 
 const userRouter = new Hono();
@@ -43,15 +43,15 @@ userRouter.post("/login", async (c) => {
 	}
 });
 
-const UserLLMResponsesSchema = z.object({
+const UserLLMRequestsSchema = z.object({
 	organisationId: z.string(),
 });
 
-export type IUserLLMResponsesSchema = z.infer<typeof UserLLMResponsesSchema> & { userId: string };
+export type IUserLLMRequestsSchema = z.infer<typeof UserLLMRequestsSchema> & { userId: string };
 
-userRouter.post("/llm-responses", authMiddleware, async (c) => {
+userRouter.post("/llm-requests", authMiddleware, async (c) => {
 	try {
-		const validation = UserLLMResponsesSchema.safeParse(await c.req.json());
+		const validation = UserLLMRequestsSchema.safeParse(await c.req.json());
 		if (!validation.success) {
 			throw validation.error;
 		}
@@ -59,14 +59,14 @@ userRouter.post("/llm-responses", authMiddleware, async (c) => {
 			...validation.data,
 			userId: c.get("user").userId as string,
 		};
-		const responses = await getUserLLMResponses(payload);
+		const responses = await getUserLLMRequests(payload);
 		return c.json({ success: true, data: responses }, 200);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			const errMessage = JSON.parse(error.message);
 			return c.json({ success: false, error: errMessage[0], message: errMessage[0].message }, 401);
 		}
-		if (error instanceof GetUserLLMResponsesError || error instanceof GetUserLLMResponsesFromDBError) {
+		if (error instanceof GetUserLLMRequestsError || error instanceof GetUserLLMRequestsFromDBError) {
 			return c.json({ success: false, error: error.message }, 401);
 		}
 		return c.json({ success: false, error: "Error occurred while fetching user LLM responses", message: (error as Error).message }, 500);

@@ -1,13 +1,13 @@
 import { USER_ROLES } from "../constants/constants";
-import { GetUserLLMResponsesFromDBError } from "../exceptions/llmResponses.exceptions";
+import { GetUserLLMRequestsFromDBError } from "../exceptions/llmRequests.exceptions";
 import { AddOrganisationToDBError, GetUserOrganisationsFromDBError } from "../exceptions/organisation.exceptions";
 import { AddOrganisationMemberToDBError } from "../exceptions/organisationMembers.exceptions";
-import { AddUserToDBError, GetUserByEmailFromDBError, GetUserLLMResponsesError, LoginUserError } from "../exceptions/user.exceptions";
-import { getUserLLMResponsesFromDB } from "../repository/llmResponses.repository";
+import { AddUserToDBError, GetUserByEmailFromDBError, GetUserLLMRequestsError, LoginUserError } from "../exceptions/user.exceptions";
+import { getUserLLMRequestsFromDB } from "../repository/llmRequests.repository";
 import { createOrganisatonInDB, getUserOrganisationsFromDB } from "../repository/organisation.repository";
 import { addMemberToOrganisationInDB } from "../repository/organisationMembers.repository";
 import { addUserToDB, getUserByEmailFromDB } from "../repository/user.repository";
-import type { ILoginUserSchema, IUserLLMResponsesSchema } from "../routes/v1/user.route";
+import type { ILoginUserSchema, IUserLLMRequestsSchema } from "../routes/v1/user.route";
 
 export async function loginUser(payload: ILoginUserSchema) {
 	try {
@@ -40,14 +40,14 @@ export async function loginUser(payload: ILoginUserSchema) {
 	}
 }
 
-export async function getUserLLMResponses(payload: IUserLLMResponsesSchema) {
+export async function getUserLLMRequests(payload: IUserLLMRequestsSchema) {
 	try {
 		//TODO: check if user is part of the organisation before fetching the responses
-		return await getUserLLMResponsesFromDB({ userId: payload.userId, organizationId: payload.organisationId });
+		return await getUserLLMRequestsFromDB({ userId: payload.userId, organizationId: payload.organisationId });
 	} catch (error) {
-		if (error instanceof GetUserLLMResponsesFromDBError) {
+		if (error instanceof GetUserLLMRequestsFromDBError) {
 			throw error;
 		}
-		throw new GetUserLLMResponsesError("Error occurred while fetching user LLM responses", { cause: (error as Error).message });
+		throw new GetUserLLMRequestsError("Error occurred while fetching user LLM responses", { cause: (error as Error).message });
 	}
 }

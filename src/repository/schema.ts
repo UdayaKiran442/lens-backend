@@ -37,10 +37,10 @@ export const modelPricing = pgTable(
 	}),
 );
 
-export const llmResponses = pgTable(
-	"llm_responses",
+export const llmRequests = pgTable(
+	"llm_requests",
 	{
-		responseId: varchar("response_id").primaryKey().notNull(),
+		requestId: varchar("request_id").primaryKey().notNull(),
 		userId: varchar("user_id").notNull(),
 		organisationId: varchar("organisation_id").notNull(),
 		provider: varchar("provider").notNull(),
@@ -56,7 +56,7 @@ export const llmResponses = pgTable(
 		loggedAt: timestamp("logged_at").notNull().defaultNow(),
 	},
 	(table) => ({
-		primaryKey: primaryKey({ name: "llm_responses_pk", columns: [table.responseId] }),
-		llmResponsesIdx: index("llm_responses_idx").on(table.userId, table.organisationId),
+		primaryKey: primaryKey({ name: "llm_requests_pk", columns: [table.requestId] }),
+		llmRequestsIdx: index("llm_requests_idx").on(table.userId, table.organisationId),
 	}),
 );

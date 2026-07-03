@@ -1,10 +1,10 @@
 import { MODEL_PROVIDERS } from "../constants/constants";
 import { ChatCompletionsError } from "../exceptions/chat.exceptions";
-import { InsertLLMResponseToDBError } from "../exceptions/llmResponses.exceptions";
+import { InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
 import { GetModelPricingFromDBError } from "../exceptions/modelPricing.exceptions";
 import { GenerateOpenAIResponseError } from "../exceptions/openai.exceptions";
 import { GenerateSarvamResponseError } from "../exceptions/sarvam.exceptions";
-import { insertLLMResponseToDB } from "../repository/llmResponses.repository";
+import { insertLLMRequestsToDB } from "../repository/llmRequests.repository";
 import { getModelPricingFromDB } from "../repository/modelPricing.repository";
 import type { IChatCompletionSchema } from "../routes/v1/chat.route";
 import { generateOpenAIResponse } from "../service/openai.service";
@@ -49,7 +49,7 @@ export async function chatController(payload: IChatCompletionSchema) {
 			default:
 				throw new ChatCompletionsError("Invalid provider");
 		}
-		const llmResponse = await insertLLMResponseToDB({
+		const llmRequest = await insertLLMRequestsToDB({
 			organizationId: payload.organisationId,
 			userId: payload.userId,
 			model: payload.model,
@@ -63,9 +63,9 @@ export async function chatController(payload: IChatCompletionSchema) {
 			totalTokens: totalTokens,
 			currency: currency,
 		});
-		return { response, inputTokens, outputTokens, cachedInputTokens, totalCost, currency, llmResponse };
+		return { response, inputTokens, outputTokens, cachedInputTokens, totalCost, currency, llmRequest };
 	} catch (error) {
-		if (error instanceof GenerateSarvamResponseError || error instanceof GenerateOpenAIResponseError || error instanceof GetModelPricingFromDBError || error instanceof InsertLLMResponseToDBError) {
+		if (error instanceof GenerateSarvamResponseError || error instanceof GenerateOpenAIResponseError || error instanceof GetModelPricingFromDBError || error instanceof InsertLLMRequestsToDBError) {
 			throw error;
 		}
 		throw new ChatCompletionsError("Error occurred while processing chat completion", { cause: (error as Error).message });

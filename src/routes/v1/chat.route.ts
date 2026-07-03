@@ -3,7 +3,7 @@ import z from "zod";
 import { MODEL_PROVIDERS } from "../../constants/constants";
 import { chatController } from "../../controller/chat.controller";
 import { ChatCompletionsError } from "../../exceptions/chat.exceptions";
-import { InsertLLMResponseToDBError } from "../../exceptions/llmResponses.exceptions";
+import { InsertLLMRequestsToDBError } from "../../exceptions/llmRequests.exceptions";
 import { GetModelPricingFromDBError } from "../../exceptions/modelPricing.exceptions";
 import { GenerateOpenAIResponseError } from "../../exceptions/openai.exceptions";
 import { GenerateSarvamResponseError } from "../../exceptions/sarvam.exceptions";
@@ -51,7 +51,7 @@ chatRouter.post("/completion", authMiddleware, async (c) => {
 			error instanceof GetModelPricingFromDBError ||
 			error instanceof GenerateSarvamResponseError ||
 			error instanceof GenerateOpenAIResponseError ||
-			error instanceof InsertLLMResponseToDBError
+			error instanceof InsertLLMRequestsToDBError
 		) {
 			return c.json({ success: false, error: error.message, message: error.message }, 500);
 		}

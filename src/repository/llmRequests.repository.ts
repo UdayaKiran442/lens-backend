@@ -1,10 +1,10 @@
 import { and, eq } from "drizzle-orm";
-import { GetUserLLMResponsesFromDBError, InsertLLMResponseToDBError } from "../exceptions/llmResponses.exceptions";
+import { GetUserLLMRequestsFromDBError, InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
 import { generateNanoId } from "../utils/nanoid.utils";
 import db from "./db";
-import { llmResponses } from "./schema";
+import { llmRequests } from "./schema";
 
-export async function insertLLMResponseToDB(payload: {
+export async function insertLLMRequestsToDB(payload: {
 	userId: string;
 	organizationId: string;
 	model: string;
@@ -20,7 +20,7 @@ export async function insertLLMResponseToDB(payload: {
 }) {
 	try {
 		const insertPayload = {
-			responseId: `response_${generateNanoId()}`,
+			requestId: `request_${generateNanoId()}`,
 			userId: payload.userId,
 			organisationId: payload.organizationId,
 			model: payload.model,
@@ -35,20 +35,20 @@ export async function insertLLMResponseToDB(payload: {
 			currency: payload.currency,
 			loggedAt: new Date(),
 		};
-		await db.insert(llmResponses).values(insertPayload);
+		await db.insert(llmRequests).values(insertPayload);
 		return insertPayload;
 	} catch (error) {
-		throw new InsertLLMResponseToDBError("Error occurred while inserting LLM response to database", { cause: (error as Error).message });
+		throw new InsertLLMRequestsToDBError("Error occurred while inserting LLM request to database", { cause: (error as Error).message });
 	}
 }
 
-export async function getUserLLMResponsesFromDB(payload: { userId: string; organizationId: string }) {
+export async function getUserLLMRequestsFromDB(payload: { userId: string; organizationId: string }) {
 	try {
 		return await db
 			.select()
-			.from(llmResponses)
-			.where(and(eq(llmResponses.userId, payload.userId), eq(llmResponses.organisationId, payload.organizationId)));
+			.from(llmRequests)
+			.where(and(eq(llmRequests.userId, payload.userId), eq(llmRequests.organisationId, payload.organizationId)));
 	} catch (error) {
-		throw new GetUserLLMResponsesFromDBError("Error occurred while fetching user LLM responses from database", { cause: (error as Error).message });
+		throw new GetUserLLMRequestsFromDBError("Error occurred while fetching user LLM requests from database", { cause: (error as Error).message });
 	}
 }

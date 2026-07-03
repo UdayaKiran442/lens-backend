@@ -1,18 +1,18 @@
-export class InsertLLMResponseToDBError extends Error {
+export class InsertLLMRequestsToDBError extends Error {
 	public cause?: unknown;
 	constructor(message: string, options?: { cause?: unknown }) {
 		super(message);
-		this.name = "InsertLLMResponseToDBError";
+		this.name = "InsertLLMRequestsToDBError";
 		if (options?.cause) this.cause = options.cause;
 		Error.captureStackTrace(this, this.constructor);
 	}
 }
 
-export class GetUserLLMResponsesFromDBError extends Error {
+export class GetUserLLMRequestsFromDBError extends Error {
 	public cause?: unknown;
 	constructor(message: string, options?: { cause?: unknown }) {
 		super(message);
-		this.name = "GetUserLLMResponsesFromDBError";
+		this.name = "GetUserLLMRequestsFromDBError";
 		if (options?.cause) this.cause = options.cause;
 		Error.captureStackTrace(this, this.constructor);
 	}

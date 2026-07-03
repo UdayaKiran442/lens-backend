@@ -28,11 +28,11 @@ export class LoginUserError extends Error {
 	}
 }
 
-export class GetUserLLMResponsesError extends Error {
+export class GetUserLLMRequestsError extends Error {
 	public cause?: unknown;
 	constructor(message: string, options?: { cause?: unknown }) {
 		super(message);
-		this.name = "GetUserLLMResponsesError";
+		this.name = "GetUserLLMRequestsError";
 		if (options?.cause) this.cause = options.cause;
 		Error.captureStackTrace(this, this.constructor);
 	}
