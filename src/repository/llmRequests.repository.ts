@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { GetUserLLMRequestsFromDBError, InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
+import { FetchLLMRequestFromDBError, GetUserLLMRequestsFromDBError, InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
 import { generateNanoId } from "../utils/nanoid.utils";
 import db from "./db";
 import { llmRequests } from "./schema";
@@ -50,5 +50,14 @@ export async function getUserLLMRequestsFromDB(payload: { userId: string; organi
 			.where(and(eq(llmRequests.userId, payload.userId), eq(llmRequests.organisationId, payload.organizationId)));
 	} catch (error) {
 		throw new GetUserLLMRequestsFromDBError("Error occurred while fetching user LLM requests from database", { cause: (error as Error).message });
+	}
+}
+
+export async function fetchLLMRequestFromDB(requestId: string) {
+	try {
+		const llmRequest = await db.select().from(llmRequests).where(eq(llmRequests.requestId, requestId));
+		return llmRequest[0];
+	} catch (error) {
+		throw new FetchLLMRequestFromDBError("Error occurred while fetching LLM request from database", { cause: (error as Error).message });
 	}
 }
