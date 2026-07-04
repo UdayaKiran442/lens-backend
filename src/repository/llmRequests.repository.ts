@@ -11,6 +11,8 @@ export async function insertLLMRequestsToDB(payload: {
 	provider: string;
 	prompt: string;
 	response: object;
+	temprature: number;
+	topP: number;
 	inputTokens: number;
 	outputTokens: number;
 	cachedInputTokens: number;
@@ -27,6 +29,8 @@ export async function insertLLMRequestsToDB(payload: {
 			provider: payload.provider,
 			prompt: payload.prompt,
 			response: payload.response,
+			temperature: payload.temprature,
+			topP: payload.topP,
 			inputTokens: payload.inputTokens,
 			outputTokens: payload.outputTokens,
 			cachedInputTokens: payload.cachedInputTokens,

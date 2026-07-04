@@ -47,6 +47,8 @@ export const llmRequests = pgTable(
 		model: varchar("model").notNull(),
 		prompt: varchar("prompt").notNull(),
 		response: json("response").notNull(),
+		temperature: decimal("temperature", { precision: 5, scale: 2 }).$type<number>().notNull(),
+		topP: decimal("top_p", { precision: 5, scale: 2 }).$type<number>().notNull(),
 		inputTokens: integer("input_tokens").notNull(),
 		outputTokens: integer("output_tokens").notNull(),
 		cachedInputTokens: integer("cached_input_tokens").notNull(),

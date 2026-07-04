@@ -62,6 +62,8 @@ export async function chatController(payload: IChatCompletionSchema) {
 			totalCost: totalCost,
 			totalTokens: totalTokens,
 			currency: currency,
+			topP: payload.top_p,
+			temprature: payload.temperature,
 		});
 		return { response, inputTokens, outputTokens, cachedInputTokens, totalCost, currency, llmRequest };
 	} catch (error) {
