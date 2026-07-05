@@ -12,5 +12,7 @@ else {
 
 export const ActiveConfig = {
     DATABASE_URL: process.env.DATABASE_URL ?? "",
-    ENVIRONMENT: process.env.ENVIRONMENT ?? "development"
+    ENVIRONMENT: process.env.ENVIRONMENT ?? "development",
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL ?? "",
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN ?? "",
 }
