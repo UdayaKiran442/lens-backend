@@ -44,6 +44,7 @@ export async function loginUser(payload: ILoginUserSchema) {
 export async function getUserLLMRequests(payload: IUserLLMRequestsSchema) {
 	try {
 		//TODO: check if user is part of the organisation before fetching the responses
+		// biome-ignore lint/suspicious/noExplicitAny: <due to dynamic type of cached responses>
 		const cachedResponses = await redis.get(`user_llm_requests_${payload.userId}_${payload.organisationId}`) as any;
 		if (cachedResponses) {
 			return cachedResponses;
