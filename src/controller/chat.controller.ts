@@ -1,3 +1,4 @@
+import redis from "../config/redis.config";
 import { MODEL_PROVIDERS } from "../constants/constants";
 import { ChatCompletionsError } from "../exceptions/chat.exceptions";
 import { InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
@@ -65,6 +66,7 @@ export async function chatController(payload: IChatCompletionSchema) {
 			topP: payload.top_p,
 			temprature: payload.temperature,
 		});
+		await redis.del(`user_llm_requests_${payload.userId}_${payload.organisationId}`);
 		return { response, inputTokens, outputTokens, cachedInputTokens, totalCost, currency, llmRequest };
 	} catch (error) {
 		if (error instanceof GenerateSarvamResponseError || error instanceof GenerateOpenAIResponseError || error instanceof GetModelPricingFromDBError || error instanceof InsertLLMRequestsToDBError) {

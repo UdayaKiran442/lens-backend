@@ -1,3 +1,4 @@
+import redis from "../config/redis.config";
 import { USER_ROLES } from "../constants/constants";
 import { GetUserLLMRequestsFromDBError } from "../exceptions/llmRequests.exceptions";
 import { AddOrganisationToDBError, GetUserOrganisationsFromDBError } from "../exceptions/organisation.exceptions";
@@ -43,7 +44,13 @@ export async function loginUser(payload: ILoginUserSchema) {
 export async function getUserLLMRequests(payload: IUserLLMRequestsSchema) {
 	try {
 		//TODO: check if user is part of the organisation before fetching the responses
-		return await getUserLLMRequestsFromDB({ userId: payload.userId, organizationId: payload.organisationId });
+		const cachedResponses = await redis.get(`user_llm_requests_${payload.userId}_${payload.organisationId}`) as any;
+		if (cachedResponses) {
+			return cachedResponses;
+		}
+		const userLLMRequests = await getUserLLMRequestsFromDB({ userId: payload.userId, organizationId: payload.organisationId });
+		await redis.set(`user_llm_requests_${payload.userId}_${payload.organisationId}`, JSON.stringify(userLLMRequests), { ex: 3600 });
+		return userLLMRequests;
 	} catch (error) {
 		if (error instanceof GetUserLLMRequestsFromDBError) {
 			throw error;
