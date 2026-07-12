@@ -4,6 +4,7 @@ export const users = pgTable("users", {
 	userId: varchar("user_id").primaryKey().notNull(),
 	name: varchar("name"),
 	email: varchar("email").notNull().unique(),
+	plan: varchar("plan").notNull().default("basic"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
