@@ -1,12 +1,13 @@
 import redis from "../config/redis.config";
-import { MODEL_PROVIDERS } from "../constants/constants";
+import { MODEL_PROVIDERS, PAYMENT_PLANS } from "../constants/constants";
 import { ChatCompletionsError } from "../exceptions/chat.exceptions";
-import { InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
+import { CountOrgLast7DaysLLMRequestsFromDBError, InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
 import { GetModelPricingFromDBError } from "../exceptions/modelPricing.exceptions";
 import { GenerateOpenAIResponseError } from "../exceptions/openai.exceptions";
 import { GenerateSarvamResponseError } from "../exceptions/sarvam.exceptions";
-import { insertLLMRequestsToDB } from "../repository/llmRequests.repository";
+import { countOrgLast7DaysLLMRequestsFromDB, insertLLMRequestsToDB } from "../repository/llmRequests.repository";
 import { getModelPricingFromDB } from "../repository/modelPricing.repository";
+import { getUserByUserIdFromDB } from "../repository/user.repository";
 import type { IChatCompletionSchema } from "../routes/v1/chat.route";
 import { generateOpenAIResponse } from "../service/openai.service";
 import { generateSarvamResponse } from "../service/sarvamai.service";
@@ -20,7 +21,10 @@ export async function chatController(payload: IChatCompletionSchema) {
 		let cachedInputTokens = 0;
 		let totalCost = 0;
 		let totalTokens = 0;
-		const pricing = await getModelPricingFromDB({ provider: payload.provider, model: payload.model });
+		const [pricing, user] = await Promise.all([
+			getModelPricingFromDB({ provider: payload.provider, model: payload.model }),
+			getUserByUserIdFromDB(payload.userId),
+		]) 
 		const inputPricing = pricing.inputPrice;
 		const outputPricing = pricing.outputPrice;
 		const cachedPricing = pricing.cachedInputPrice;
@@ -50,6 +54,15 @@ export async function chatController(payload: IChatCompletionSchema) {
 			default:
 				throw new ChatCompletionsError("Invalid provider");
 		}
+		// check user plan
+		if (user[0].plan === PAYMENT_PLANS.BASIC.plan_name) {
+			// check total logs for the user in the last 7 days
+			const totalLogs = await countOrgLast7DaysLLMRequestsFromDB(payload.organisationId);
+			// if total logs are greater than current plan, return the response without inserting the request to the database
+			if (totalLogs && totalLogs >= PAYMENT_PLANS.BASIC.logs){
+				return { response, inputTokens, outputTokens, cachedInputTokens, totalCost, currency, llmRequest: null };
+			}
+		}
 		const llmRequest = await insertLLMRequestsToDB({
 			organizationId: payload.organisationId,
 			userId: payload.userId,
@@ -69,7 +82,7 @@ export async function chatController(payload: IChatCompletionSchema) {
 		await redis.del(`user_llm_requests_${payload.userId}_${payload.organisationId}`);
 		return { response, inputTokens, outputTokens, cachedInputTokens, totalCost, currency, llmRequest };
 	} catch (error) {
-		if (error instanceof GenerateSarvamResponseError || error instanceof GenerateOpenAIResponseError || error instanceof GetModelPricingFromDBError || error instanceof InsertLLMRequestsToDBError) {
+		if (error instanceof GenerateSarvamResponseError || error instanceof GenerateOpenAIResponseError || error instanceof GetModelPricingFromDBError || error instanceof InsertLLMRequestsToDBError || error instanceof CountOrgLast7DaysLLMRequestsFromDBError) {
 			throw error;
 		}
 		throw new ChatCompletionsError("Error occurred while processing chat completion", { cause: (error as Error).message });

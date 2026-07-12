@@ -8,6 +8,17 @@ export class GetUserByEmailFromDBError extends Error {
 	}
 }
 
+export class GetUserByUserIdFromDBError extends Error {
+	public cause?: unknown;
+	constructor(message: string, options?: { cause?: unknown }) {
+		super(message);
+		this.name = "GetUserByUserIdFromDBError";
+		if (options?.cause) this.cause = options.cause;
+		Error.captureStackTrace(this, this.constructor);
+	}
+}
+
+
 export class AddUserToDBError extends Error {
 	public cause?: unknown;
 	constructor(message: string, options?: { cause?: unknown }) {

@@ -1,5 +1,5 @@
-import { and, eq } from "drizzle-orm";
-import { FetchLLMRequestFromDBError, GetUserLLMRequestsFromDBError, InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
+import { and, between, eq } from "drizzle-orm";
+import { CountOrgLast7DaysLLMRequestsFromDBError, FetchLLMRequestFromDBError, GetUserLLMRequestsFromDBError, InsertLLMRequestsToDBError } from "../exceptions/llmRequests.exceptions";
 import { generateNanoId } from "../utils/nanoid.utils";
 import db from "./db";
 import { llmRequests } from "./schema";
@@ -63,5 +63,17 @@ export async function fetchLLMRequestFromDB(requestId: string) {
 		return llmRequest[0];
 	} catch (error) {
 		throw new FetchLLMRequestFromDBError("Error occurred while fetching LLM request from database", { cause: (error as Error).message });
+	}
+}
+
+export async function countOrgLast7DaysLLMRequestsFromDB(organisationId: string) {
+	try {
+		const today = new Date();
+		const sevenDaysAgo = new Date(today);
+		sevenDaysAgo.setDate(today.getDate() - 7);
+		const count = await db.select().from(llmRequests).where(and(eq(llmRequests.organisationId, organisationId), between(llmRequests.loggedAt, sevenDaysAgo, today)));
+		return count.length;
+	} catch (error) {
+		throw new CountOrgLast7DaysLLMRequestsFromDBError("Error occurred while counting organisation's LLM requests from database", { cause: (error as Error).message });
 	}
 }
