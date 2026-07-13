@@ -3,11 +3,13 @@ import { generateNanoId } from "../utils/nanoid.utils";
 import db from "./db";
 import { organisationMembers } from "./schema";
 
-export async function addMemberToOrganisationInDB(payload: { organisationId: string; userId: string; role: string }) {
+export async function addMemberToOrganisationInDB(payload: { organisationId: string; userId: string; role: string; hashedLensApiKey: string }) {
 	try {
 		const insertPayload = {
 			memberId: `member_${generateNanoId()}`,
 			organisationId: payload.organisationId,
+			lensApiKey: payload.hashedLensApiKey,
+			keyName: "default",
 			userId: payload.userId,
 			role: payload.role,
 		};

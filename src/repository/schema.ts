@@ -18,6 +18,8 @@ export const organisationMembers = pgTable("organisation_members", {
 	memberId: varchar("member_id").primaryKey().notNull(),
 	organisationId: varchar("organisation_id").notNull(),
 	userId: varchar("user_id").notNull(),
+	lensApiKey: varchar("lens_api_key").notNull(),
+	keyName: varchar("key_name").notNull(),
 	role: varchar("role").notNull(),
 	joinedAt: timestamp("joined_at").notNull().defaultNow(),
 });

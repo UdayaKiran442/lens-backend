@@ -9,6 +9,8 @@ import { createOrganisatonInDB, getUserOrganisationsFromDB } from "../repository
 import { addMemberToOrganisationInDB } from "../repository/organisationMembers.repository";
 import { addUserToDB, getUserByEmailFromDB } from "../repository/user.repository";
 import type { ILoginUserSchema, IUserLLMRequestsSchema } from "../routes/v1/user.route";
+import { hashApiKey } from "../utils/bycrypt.utils";
+import { generateNanoId } from "../utils/nanoid.utils";
 
 export async function loginUser(payload: ILoginUserSchema) {
 	try {
@@ -21,12 +23,15 @@ export async function loginUser(payload: ILoginUserSchema) {
 		}
 		// else, add user to the database along with create new organisation and add user to organisation members table
 		const [newUser, newOrganisation] = await Promise.all([addUserToDB({ userId: payload.userId, email: payload.email, name: null }), createOrganisatonInDB({ name: "New Organisation" })]);
+		const lensApiKey = `lens_api_${generateNanoId()}`;
+		const hashedApiKey = await hashApiKey(lensApiKey);
 		const newOrganisationMember = await addMemberToOrganisationInDB({
 			organisationId: newOrganisation.organisationId,
 			userId: newUser.userId,
 			role: USER_ROLES.ADMIN,
+			hashedLensApiKey: hashedApiKey,
 		});
-		return { user: newUser, organisation: newOrganisationMember };
+		return { user: newUser, organisation: newOrganisationMember, lensApiKey };
 	} catch (error) {
 		if (
 			error instanceof AddUserToDBError ||
